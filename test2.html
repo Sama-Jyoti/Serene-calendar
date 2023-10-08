@@ -1,0 +1,1808 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Calendar</title>
+
+    <!-- Include FullCalendar CSS and JavaScript -->
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.js"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
+
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+
+    <style>
+        :root {
+
+            --fc-button-text-color: #fff;
+
+            --fc-button-bg-color: #568ED3;
+            --fc-button-border-color: #568ED3;
+
+            --fc-button-hover-bg-color: #1D2F46;
+            --fc-button-hover-border-color: #1D2F46;
+
+            --fc-button-active-bg-color: #1D2F46;
+            --fc-button-active-border-color: #1D2F46;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        hr {
+            opacity: 0.6;
+            height: 1px;
+            background-color: #d4d4d4;
+            border: none;
+            margin: 15px 0 10px 0;
+            z-index: 10;
+            position: relative;
+        }
+
+        #calendar {
+            max-width: 100%;
+            height: 100vh;
+            margin: 0 auto;
+        }
+
+        .modal {
+            display: none;
+            /* Hidden by default */
+            position: fixed;
+            /* Stay in place */
+            z-index: 100;
+            /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%;
+            /* Full width */
+            height: 100%;
+            /* Full height */
+            overflow: auto;
+            /* Enable scroll if needed */
+            background-color: rgba(0, 0, 0, 0.4);
+            /* Black background with opacity */
+        }
+
+        /* Adjust the modal content styling */
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            /* 15% from the top and centered */
+            padding: 5px 25px;
+            border: 1px solid #888;
+            width: 420px;
+            /* Could be more or less, depending on screen size */
+            border-radius: 7px;
+        }
+
+        /* Style for view buttons */
+        .view-buttons {
+            margin-bottom: 20px;
+        }
+
+        .view-button {
+            margin-right: 10px;
+            cursor: pointer;
+            padding: 5px 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+        }
+
+        #clientName {
+            width: 65%;
+            padding: 5px 10px;
+            border-radius: 3px;
+        }
+
+        #location {
+            width: 100%;
+            padding: 5px 10px;
+            border-radius: 3px;
+        }
+
+        #clientName::placeholder {
+            opacity: 0.5;
+        }
+
+        select::-ms-expand {
+            display: none;
+        }
+
+        select {
+            /* display: inline-block; */
+            /* box-sizing: border-box; */
+            /* padding: 0.5em 2em 0.5em 0.5em; */
+            /* border: 1px solid #eee; */
+            /* font: inherit; */
+            line-height: inherit;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            -ms-appearance: none;
+            appearance: none;
+            background-repeat: no-repeat;
+            background-image: linear-gradient(45deg, transparent 50%, currentColor 50%), linear-gradient(135deg, currentColor 50%, transparent 50%);
+            background-position: right 14px top 0.8em, right 10px top 0.8em;
+            background-size: 5px 5px, 5px 5px;
+        }
+
+        /*  */
+        #allDay {
+            margin-bottom: 10px;
+        }
+
+        /*  */
+        #appointmentDate {
+            padding: 4px 10px;
+
+            border-radius: 3px;
+            border: 0.5px solid #888;
+
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+
+        #appointmentTime {
+            padding: 3px 10px;
+            width: 95px;
+            margin-left: -4px;
+
+            border: 0.5px solid #888;
+            border-radius: 3px;
+
+            border-left: none;
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+        }
+
+        #minDuration {
+            padding: 5px 10px;
+            width: 40px;
+
+            border: 0.5px solid #888;
+            border-radius: 3px;
+        }
+
+        /*  */
+
+        #services {
+            width: 100%;
+            padding: 5px 10px;
+            border-radius: 3px;
+        }
+
+        #fee {
+            padding: 5px 10px;
+            width: 40px;
+
+            border: 0.5px solid #888;
+            border-radius: 3px;
+        }
+
+
+        .modalBtn {
+            color: white;
+            background-color: #568ED3;
+            padding: 6px 13px;
+            border: none;
+            border-radius: 3px;
+        }
+
+        .modalBtn:hover {
+            background-color: #1D2F46;
+        }
+
+        #rech-text-box {
+            /* display: none; */
+        }
+
+        #addNote {
+            background: #fff;
+            color: #568ED3;
+            text-decoration: underline;
+            padding: 4px 6px 4px 0;
+        }
+
+        #addNote:hover {
+            color: #1D2F46;
+        }
+
+        #appointmentType {
+            margin-left: 0;
+        }
+
+        #allDay {
+            margin-left: 0;
+        }
+
+        .search-container {
+            width: 100%;
+            /* background-color: #f5f5f5; */
+            /* border: 1px solid gray; */
+            /* border-radius: 3px; */
+
+            z-index: 1001;
+        }
+
+        #selected_client {
+            padding: 10px;
+        }
+
+        #search-input-client {
+            /* display: none; */
+            width: calc(100% - 23px);
+            padding: 5px 10px;
+            /* margin-left: 10px; */
+        }
+
+        #search-results-client {
+            display: none;
+            position: absolute;
+            background-color: #fff;
+            width: 330px;
+            padding: 10px;
+
+            margin-left: -1px;
+
+            border: 1px solid gray;
+            border-radius: 3px;
+
+            overflow: hidden;
+            /* border-bottom-right-radius: 3px; */
+            /* or 'fixed' depending on your requirements */
+            /* top: 0; */
+            /* left: 0; */
+        }
+
+        .hover-effect {
+            padding: 5px 10px;
+            background-color: transparent;
+            color: black;
+            transition: background-color 0.1s ease-in-out, color 0.1s ease-in-out;
+            font-size: 12px;
+        }
+
+        .hover-effect:hover {
+            background-color: #C1D6F0;
+            /* color: white; */
+        }
+
+        label {
+            font-size: 14px;
+        }
+
+        input {
+            font-size: 12px;
+        }
+
+        .error-message {
+            display: none;
+            color: red;
+            font-size: 12px;
+        }
+
+        #status {
+            width: 150px;
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+
+        .flexx {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+        }
+
+        .timeStyle {
+            font-size: 11px;
+            padding: 3px;
+        }
+
+        .red-card-svg {
+            color: red;
+            height: 15px;
+            width: 15px;
+        }
+
+        .iconContainer {
+            display: flex;
+            justify-content: flex-end;
+            width: 35px;
+            gap: 5px;
+            margin: 3px 3px 0 0;
+            background-color: transparent;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="calendar"></div>
+
+    <!-- Event Detail Modal -->
+    <div id="eventModal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closeModal">&times;</span>
+            <h2>Event Details</h2>
+            <div id="eventDetails">
+                <p><strong>Event Name:</strong> <span id="eventName"></span></p>
+                <p><strong>Event Start:</strong> <span id="eventStart"></span></p>
+                <p><strong>Event End:</strong> <span id="eventEnd"></span></p>
+                <p><strong>Description:</strong> <span id="eventDescription"></span></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Event Modal -->
+    <div id="createEventModal" class="modal">
+        <div class="modal-content">
+            <!-- <span class="close" id="closeCreateEventModal">&times;</span> -->
+            <h2 id="appointmentFormTitle">New Appointment</h2>
+            <form id="appointmentForm">
+                <!-- <select id="clientName" name="clientName" aria-placeholder="Select Client">
+                    <option value="" disabled selected>Select Client</option>
+                    <option value="Jamie D. Appleseed" selected>Jamie D. Appleseed</option> 
+                    Add other client names as needed 
+                </select> -->
+
+                <div class="search-container" id="search-container">
+                    <!-- <div id="selected_client">Client name</div> -->
+
+                    <label for="search-input-client">Client</label>
+                    <br>
+                    <input type="text" id="search-input-client" placeholder="Search...">
+                    <div id="search-results-client" class="column"></div>
+                </div>
+
+                <div id="client-error" class="error-message">Client is required</div>
+
+                <div class="client-details-box" id="client-details-box">
+                    <div id="client-name">Client name</div>
+
+                    <!-- <div id="selected_client">Client name</div> -->
+                    <!-- <div id="selected_client">Client name</div> -->
+                </div>
+
+                <hr>
+
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="width: calc(100% - 70px);">
+                        <label for="services">Services</label>
+                        <br>
+                        <select id="services" name="services">
+                            <option
+                                value="92507 Treatment of speech, language, voice, communication, and/or auditory processing disorder; individual"
+                                selected>
+                                92507 Treatment of speech, language, voice, communication, and/or auditory
+                                processing
+                                disorder; individual
+                            </option>
+                            <!-- Add other service options as needed -->
+                        </select>
+                    </span>
+
+                    <span>
+                        <label for="fee">Fee</label>
+                        <br>
+                        <input type="number" id="fee" name="fee" value="100" required>
+                    </span>
+                </div>
+
+                <div id="fee-error" class="error-message" style="text-align: right;">Fee must be equal or greater than
+                    $5</div>
+
+                <hr>
+
+                <!-- <input type="checkbox" id="allDay" name="allDay">
+                <label for="allDay">All Day</label>
+                <br> -->
+
+                <div style="display: flex; justify-content: space-between;">
+                    <div>
+                        <input type="date" id="appointmentDate" name="appointmentDate" value="2023-09-12" required>
+
+                        <input type="time" id="appointmentTime" name="appointmentTime" value="08:00" required>
+                    </div>
+                    <div>
+                        <input type="number" id="minDuration" name="minDuration" min="10" required>
+                        <label for="minDuration">min</label>
+                    </div>
+                </div>
+
+                <hr>
+
+                <label for="location">Location</label>
+                <select id="location" name="location">
+                    <!-- Add location options as needed -->
+                    <option value="" disabled selected>Location Unassigned</option>
+                </select>
+                <br>
+
+                <!-- <hr>
+
+                <div style="display: flex; justify-content: space-between;">
+                    <span>Billing Type:</span>
+                    <span>Self-pay</span>
+                </div>
+
+                <br>
+
+                <div style="display: flex; justify-content: space-between;">
+                    <span>Appointment Total:</span>
+                    <span id="appointmentTotal">$100</span>
+                </div> -->
+
+                <div id="rech-text-box">
+                    <hr>
+
+                    <div id="rich-text-editor-box">
+                        <label for="rich-text-editor-container" id="">Note</label>
+                        <div id="rich-text-editor-container"></div>
+                    </div>
+                </div>
+
+                <div id="appointment-status-box">
+                    <hr>
+
+                    <label for="status">Appointment Status </label>
+                    <br>
+                    <select id="status" name="status">
+                        <!-- Add location options as needed -->
+                        <option value="Scheduled" selected>Scheduled</option>
+                        <option value="Completed">Completed</option>
+                        <option value="Canceled">Canceled</option>
+                        <option value="No Show">No Show</option>
+                    </select>
+                    <p style="font-size: 11px; opacity: 0.7;">Setting the status to Completed will charge the client.
+                    </p>
+                </div>
+
+                <hr>
+
+                <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+                    <button type="button" class="modalBtn" id="deleteAppointmentButton">Delete</button>
+                    <div>
+                        <button type="button" class="modalBtn" style="margin-right: 10px;"
+                            id="cancelAppointmentButton">Cancel</button>
+                        <button type="button" class="modalBtn" id="submitAppointmentButton">Done</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // selectors
+        const searchContainer = document.getElementById('search-container');
+        const clientDetailsBox = document.getElementById('client-details-box');
+        const deleteAppointmentButton = document.getElementById('deleteAppointmentButton');
+
+        const noteBox = document.getElementById('rech-text-box');
+        const noteField = document.getElementById('rich-text-editor-container');
+
+        const toolbarOptions = [
+            ['bold', 'italic', 'underline', 'clean'],
+
+            [{ 'align': [] }, { 'list': 'ordered' }, { 'list': 'bullet' }],
+
+            ['link']
+        ];
+
+        const quill = new Quill('#rich-text-editor-container', {
+            theme: 'snow', // 'snow' is one of Quill's built-in themes
+            modules: {
+                toolbar: toolbarOptions
+            }
+        });
+
+
+        const clearNote = () => quill.root.innerHTML = '';
+        const fillNote = (note) => quill.root.innerHTML = note;
+        const getNote = () => { return quill.root.innerHTML };
+
+        const showNoteBox = () => {
+            noteBox.style.display = "block";
+        };
+
+        const hideNoteBox = () => {
+            noteBox.style.display = "none";
+        }
+
+
+        // client, service sample data
+
+        let clientData = [
+            {
+                "_id": "dd3a7aba-e076-488c-b6b7-2312730b48c6",
+                "client_detais": {
+                    "_id": "1513be2b-97ba-4959-92e1-2761715f5283",
+                    "info": {
+                        "name": {
+                            "first": "test f",
+                            "last": "abc l"
+                        },
+                    }
+                }
+            }
+        ];
+
+        let servicesData = [
+            {
+                "rate": 100,
+                "duration": 50,
+                "_id": "ffc3e54c-873e-4cc7-afae-f4ffd7c1f6b5",
+                "_owner": "62b744fe-a263-461d-9770-118e125327c4",
+                "_createdDate": "2023-07-03T04:57:49.570Z",
+                "_updatedDate": "2023-09-11T06:51:54.528Z",
+                "ServicesNumber": 92523,
+                "ServiceProvider": "283a4536-af14-4c70-bdb2-ac1eadabaa5d",
+                "title": "Evaluation of speech sound production; with evaluation of language comprehension and expression (e.g., receptive and expressive language)",
+                "active": true
+            }
+        ];
+
+        let locationData = [
+            {
+                "city": "Vineland",
+                "zip": "08360",
+                "state": "Arkansas",
+                "_id": "loc-1694610129991",
+                "officeName": "test",
+                "default": true,
+                "street": "Washinton Avenue"
+            }
+        ];
+
+        let selectedClientDetails = {};
+        let isClientSearch = false;
+        let calendar = null;
+        let allAppoinments = [];
+        let clientLookUpData = {};
+
+        let openCreateEventModal = undefined;
+        let isClientDetailsProvided = false;
+
+        // document.addEventListener('DOMContentLoaded', function () {
+
+        // });
+
+        const timeFormatter = (dateString) => {
+            const date = new Date(dateString);
+
+            // Get hours and minutes from the parsed date
+            const hours = date.getHours();
+            const minutes = date.getMinutes();
+
+            // Format hours and minutes with leading zeros if necessary
+            const formattedTime = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+
+            return formattedTime; // Output: '10:00'
+        }
+
+        document.getElementById('fee').onclick = ev => document.getElementById('fee-error').style.display = 'none';
+        document.getElementById('search-input-client').onclick = ev => document.getElementById('client-error').style.display = 'none';
+
+        const renderCanendar = () => {
+            const calendarEl = document.getElementById('calendar');
+            calendar = new FullCalendar.Calendar(calendarEl, {
+                headerToolbar: {
+                    start: 'dayGridMonth,timeGridWeek,timeGridDay',
+                    center: 'title',
+                    end: 'prev,today,next'
+                },
+                buttonText: {
+                    today: 'Today',
+                    month: 'Month',
+                    week: 'Week',
+                    day: 'Day',
+                    list: 'List'
+                },
+                businessHours: {
+                    // days of week. an array of zero-based day of week integers (0=Sunday)
+                    daysOfWeek: [1, 2, 3, 4, 5], // Monday - Thursday
+
+                    startTime: '08:00', // a start time (10am in this example)
+                    endTime: '18:00', // an end time (6pm in this example)
+                },
+                firstDay: 1,
+                initialView: 'timeGridWeek',
+                editable: true,
+                selectable: true, // Enable selecting time slots
+                events: allAppoinments,
+                eventRender: function (info) {
+                    // Check if the card is not present
+                    // if (!info.event.extendedProps.cardPresent) {
+                    //     // Add an icon (you can use an HTML element or an image)
+                    info.el.innerHTML += '<i class="fas fa-exclamation-circle"></i>';
+                    // }
+
+                    console.log(info)
+                },
+                eventContent: function (arg) {
+                    console.log(arg.event.title)
+
+                    const container = document.createElement('div');
+
+                    const row1 = document.createElement('div');
+                    row1.className = 'flexx'; // add this class when both zoom and card icon are there are present
+
+                    const title = document.createElement('div');
+                    title.innerText = arg.event.title;
+
+
+                    const time = document.createElement('div');
+                    time.innerText = `${timeFormatter(arg.event.end)} - ${timeFormatter(arg.event.end)}`;
+
+                    time.className = 'timeStyle';
+
+                    row1.appendChild(time);
+
+                    const iconContainer = document.createElement('div');
+                    iconContainer.className = 'iconContainer';
+
+                    if (arg.event.extendedProps.ZoomLink !== undefined && arg.event.extendedProps.ZoomLink !== '') {
+                        const zoom = document.createElement('div');
+                        zoom.innerHTML = `
+                        <div class="red-card-svg" title="Open zoom meeting!">
+                            <?xml version="1.0"?>
+                            <svg width="15px" height="15px" data-name="Layer 1" id="Layer_1" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+                                <title />
+                                <rect fill="#518ef7" height="412.22" rx="55.43" width="412.22" x="49.89" y="49.89" />
+                                <path
+                                    d="M149.35,185.93H268.53A43.06,43.06,0,0,1,311.59,229V308.6a17.47,17.47,0,0,1-17.47,17.47H174.93A43.06,43.06,0,0,1,131.87,283V203.4A17.47,17.47,0,0,1,149.35,185.93Z"
+                                    fill="#fefefe" />
+                                <path
+                                    d="M366.38,324.53,327.6,291.3A14.24,14.24,0,0,1,322,280v-44a14.24,14.24,0,0,1,5.64-11.34l38.78-37.13a8.8,8.8,0,0,1,13.75,7.27V317.26A8.8,8.8,0,0,1,366.38,324.53Z"
+                                    fill="#fefefe" />
+                            </svg>                            
+                        </div>
+                        `;
+
+                        zoom.addEventListener("click", (event) => {
+                            event.stopPropagation();
+                            console.log('zoom...')
+
+                            //sendRequestToParent({
+                            //    type: "create appointment",
+                            //   data: my_event_obj
+                            //})
+                        })
+
+                        iconContainer.appendChild(zoom);
+                    }
+
+
+                    if (!(arg.event.extendedProps.Client in clientLookUpData)) {
+                        const card = document.createElement('div');
+                        card.innerHTML = `
+                        <div class="red-card-svg" title="Card details is missing!">
+                            <svg width="16px" height="16px" viewBox="0 0 16 16" class="bi bi-credit-card" fill="currentColor"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd"
+                                  d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm2-1a1 1 0 0 0-1 1v1h14V4a1 1 0 0 0-1-1H2zm13 4H1v5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V7z" />
+                                <path d="M2 10a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1v-1z" />
+                            </svg>                         
+                        </div>
+                        `;
+
+                        card.addEventListener("click", (event) => {
+                            event.stopPropagation();
+                            console.log('card...')
+
+                            sendRequestToParent({
+                                type: "set up card details",
+                                data: arg.event.extendedProps.Client
+                            })
+                        })
+
+                        iconContainer.appendChild(card);
+                    }
+
+                    row1.appendChild(iconContainer);
+
+                    container.appendChild(row1);
+                    container.appendChild(title);
+
+                    let arrayOfDomNodes = [container]
+                    return { domNodes: arrayOfDomNodes }
+                },
+                eventClick: function (info) {
+                    // Display event details in the modal when an event is clicked
+                    openEventModal(info.event);
+                },
+                select: function (info) {
+                    // Open the create event modal when a time slot is selected
+                    openCreateEventModal(info);
+                },
+                eventDrop: function (info) {
+                    let updatedEvent = info.event.toPlainObject(); // Convert the event to a plain object
+                    dragOrResizeEvent(updatedEvent)
+                },
+                eventResize: function (info) {
+                    let updatedEvent = info.event.toPlainObject(); // Convert the event to a plain object
+                    dragOrResizeEvent(updatedEvent)
+                },
+            });
+
+            calendar.render();
+
+
+
+            // Event Detail Modal
+            const eventModal = document.getElementById('eventModal');
+            const closeModal = document.getElementById('closeModal');
+
+            closeModal.onclick = function () {
+                eventModal.style.display = 'none';
+            }
+
+            // Create Event Modal
+            const createEventModal = document.getElementById('createEventModal');
+
+            // input selectors
+            // const allDay = document.getElementById('allDay'); // TODO: all day
+            const appointmentStatus = document.getElementById('status'); // TODO: all day
+
+            const appointmentDate = document.getElementById('appointmentDate');
+            const appointmentTime = document.getElementById('appointmentTime');
+            const minDuration = document.getElementById('minDuration');
+
+            const location = document.getElementById('location'); // TODO: location obj missing
+
+            const services = document.getElementById('services');
+            const fee = document.getElementById('fee');
+
+            const billingType = document.getElementById('billingType'); // TODO: self - pay
+            // const appointmentTotal = document.getElementById('appointmentTotal');
+
+            const cancelAppoinmentButton = document.getElementById('cancelAppointmentButton');
+            const doneAppoinmentButton = document.getElementById('submitAppointmentButton');
+
+            const appointmentFormTitle = document.getElementById('appointmentFormTitle');
+
+            const appointmentStatusBox = document.getElementById('appointment-status-box');
+
+            function validation({ validateClient }) {
+                try {
+                    let isValidate = true;
+
+                    if (parseInt(fee.value + "") < 5) {
+                        document.getElementById('fee-error').style.display = 'block';
+                        isValidate = false;
+                    }
+
+                    if (validateClient && Object.keys(selectedClientDetails).length === 0) {
+                        document.getElementById('client-error').style.display = 'block';
+                        isValidate = false;
+                    }
+
+                    return isValidate;
+                } catch (error) {
+                    return false;
+                }
+            }
+
+
+            openCreateEventModal = (info) => {
+                console.log(info, 'event create')
+
+                const my_event_obj = {
+                    title: "Client Name",
+                    description: "",
+                    "start": info.start,
+                    "end": info.end,
+                    "allDay": info.allDay,
+                    extendedProps: {
+                        Client: '',
+                        Service: '',
+                        Fee: '',
+                        Location: '',
+                        BillingType: 'Self Pay',
+                        Duration: '',
+                        Status: '',
+                        ClientRelationship: ''
+                    }
+                };
+
+                createEventModal.style.display = 'block';
+
+                appointmentFormTitle.innerText = "New Appointment";
+
+                hideNoteBox();
+
+
+                if (!isClientDetailsProvided) document.getElementById('search-input-client').focus();
+                else document.getElementById('search-input-client').value = selectedClientDetails.client_detais.info.name.first + " " + selectedClientDetails.client_detais.info.name.last || "";
+
+
+                isClientDetailsProvided = false;
+
+                // show client search
+                searchContainer.style.display = "block";
+                // hide client details
+                clientDetailsBox.style.display = "none";
+                // hide delete button
+                deleteAppointmentButton.style.visibility = "hidden";
+                // hide status input
+                appointmentStatusBox.style.display = "none";
+
+                // date, start time, duration
+                const startDate = new Date(info.start);
+                const endDate = new Date(info.end);
+
+                // start date
+                appointmentDate.value = `${startDate.getFullYear()}-${(String(startDate.getMonth() + 1).padStart(2, '0'))}-${String(startDate.getDate()).padStart(2, '0')}`;
+
+                // start time
+                appointmentTime.value = `${(startDate.getHours() + '').padStart(2, '0')}:${(startDate.getMinutes() + '').padStart(2, '0')}`;
+                // duration
+                minDuration.value = Math.floor((endDate.getTime() - startDate.getTime()) / (1000 * 60));
+
+                // closeCreateEventModal.onclick = function () {
+                //     createEventModal.style.display = 'none';
+                // }
+
+                cancelAppoinmentButton.onclick = ev => {
+                    createEventModal.style.display = 'none';
+                }
+
+                doneAppoinmentButton.onclick = ev => {
+                    if (validation({ validateClient: true }) === false) return;
+
+                    // set start & end date & time
+                    my_event_obj.start = new Date(appointmentDate.value + 'T' + appointmentTime.value + ':00');
+                    my_event_obj.end = new Date(new Date(my_event_obj.start).getTime() + minDuration.value * 60 * 1000);
+
+                    my_event_obj.extendedProps.Duration = minDuration.value;
+
+                    // set fee
+                    my_event_obj.extendedProps.Fee = fee.value;
+
+                    my_event_obj.title = selectedClientDetails.client_detais.info.name.first + " " + selectedClientDetails.client_detais.info.name.last || "";
+                    my_event_obj.extendedProps.Client = selectedClientDetails;
+
+                    // set services
+                    try {
+                        let serviceDetails = {};
+                        const serviceID = services.value;
+
+                        for (let i = 0; i < servicesData.length; i++) {
+                            if (servicesData[i]._id === serviceID) {
+                                serviceDetails = servicesData[i];
+                                break;
+                            }
+                        }
+
+                        my_event_obj.extendedProps.Service = serviceDetails;
+                    } catch (error) {
+                        console.log(error, 'error in parse the service object');
+                    }
+
+                    // set locations
+                    try {
+                        // locationData
+                        let locationDetails = {};
+                        const locationId = location.value;
+
+                        for (let i = 0; i < locationData.length; i++) {
+                            if (locationData[i]._id === locationId) {
+                                locationDetails = locationData[i];
+                                break;
+                            }
+                        }
+
+                        my_event_obj.extendedProps.Location = locationDetails;
+                    } catch (error) {
+                        console.log(error, 'error in parse the location object');
+                    }
+
+                    // appointment satus
+                    my_event_obj.extendedProps.Status = "Scheduled";
+
+                    // calendar.addEvent(my_event_obj);
+
+                    sendRequestToParent({
+                        type: "create appointment",
+                        data: my_event_obj
+                    })
+
+                    console.log(my_event_obj)
+
+                    createEventModal.style.display = 'none';
+                };
+            };
+
+            // edit appointment
+            function openEventModal(event) {
+                const eventPlainObject = event.toPlainObject();
+                console.log(eventPlainObject, 'plain obj');
+
+                const my_event_obj = JSON.parse(JSON.stringify(eventPlainObject));
+
+                // {
+                //     "id": "36adb88a-1d41-4455-934b-f184f7494eb2",
+                //     "title": "test f abc l",
+                //     "start": "2023-09-10T03:00:00.000Z",
+                //     "end": "2023-09-10T03:30:00.000Z",
+                //     "allDay": false,
+                //     "backgroundColor": "#568ED3",
+                //     "extendedProps": {
+                //         "Client": "e3a11028-4902-445f-9ee8-c2c9fcd4cd73",
+                //         "Duration": 30,
+                //         "Fee": 5,
+                //         "Service": "3817bf2b-66d1-46f4-a92c-a2a806c2de83",
+                //         "appointmentId": "36adb88a-1d41-4455-934b-f184f7494eb2",
+                //         "start": "2023-09-10T03:00:00.000Z",
+                //         "end": "2023-09-10T03:30:00.000Z",
+                //         "backgroundColor": "#568ED3",
+                //         "Location": ""
+                //     }
+                // }
+
+                // hide client search
+                searchContainer.style.display = "none";
+                // show client details
+                clientDetailsBox.style.display = "block";
+
+                appointmentFormTitle.innerText = "Edit Appointment";
+
+                showNoteBox();
+
+                document.getElementById('client-name').innerText = my_event_obj.title;
+                // show delete button
+                deleteAppointmentButton.style.visibility = "visible";
+                // show appointment status box
+                appointmentStatusBox.style.display = "block";
+
+
+                // date, start time, duration
+                const startDate = new Date(my_event_obj.start);
+                const endDate = new Date(my_event_obj.end);
+
+                // start date
+                appointmentDate.value = `${startDate.getFullYear()}-${(String(startDate.getMonth() + 1).padStart(2, '0'))}-${String(startDate.getDate()).padStart(2, '0')}`;
+
+                // start time
+                appointmentTime.value = `${(startDate.getHours() + '').padStart(2, '0')}:${(startDate.getMinutes() + '').padStart(2, '0')}`;
+                // duration
+                minDuration.value = Math.floor((endDate.getTime() - startDate.getTime()) / (1000 * 60));
+
+                // service
+                services.value = my_event_obj.extendedProps.Service;
+                location.value = my_event_obj.extendedProps.Location;
+
+                fee.value = my_event_obj.extendedProps.Fee;
+
+                // appointment status
+                appointmentStatus.value = my_event_obj.extendedProps.Status || "Scheduled";
+
+                console.log(appointmentDate.value, appointmentTime.value, minDuration.value, 'set edit')
+
+                // note
+                fillNote(my_event_obj.extendedProps.Note?.title || '');
+
+                // cancel btn
+                cancelAppoinmentButton.onclick = ev => {
+                    createEventModal.style.display = 'none';
+                    clearNote();
+                }
+
+                // delete btn
+                deleteAppointmentButton.onclick = ev => {
+                    sendRequestToParent({
+                        type: "delete appointment",
+                        data: { id: my_event_obj.extendedProps.appointmentId }
+                    })
+
+                    createEventModal.style.display = 'none';
+                    clearNote();
+                }
+
+                doneAppoinmentButton.onclick = ev => {
+                    if (validation({ validateClient: false }) === false) return;
+
+
+                    console.log(appointmentDate.value, appointmentTime.value, minDuration.value, 'set edit')
+                    // set start & end date & time
+                    my_event_obj.extendedProps.start = new Date(appointmentDate.value + 'T' + appointmentTime.value + ':00');
+                    my_event_obj.extendedProps.end = new Date(new Date(my_event_obj.extendedProps.start).getTime() + minDuration.value * 60 * 1000);
+
+                    my_event_obj.extendedProps.Duration = minDuration.value;
+
+                    // set fee
+                    my_event_obj.extendedProps.Fee = fee.value;
+
+                    // appointment status
+                    my_event_obj.extendedProps.Status = appointmentStatus.value;
+
+                    // set services
+                    try {
+                        let serviceDetails = {};
+                        const serviceID = services.value;
+
+                        for (let i = 0; i < servicesData.length; i++) {
+                            if (servicesData[i]._id === serviceID) {
+                                serviceDetails = servicesData[i];
+                                break;
+                            }
+                        }
+
+                        my_event_obj.extendedProps.Service = serviceDetails;
+                    } catch (error) {
+                        console.log(error, 'error in parse the service object');
+                    }
+
+                    // set locations
+                    try {
+                        // locationData
+                        let locationDetails = {};
+                        const locationId = location.value;
+
+                        for (let i = 0; i < locationData.length; i++) {
+                            if (locationData[i]._id === locationId) {
+                                locationDetails = locationData[i];
+                                break;
+                            }
+                        }
+
+                        my_event_obj.extendedProps.Location = locationDetails;
+                    } catch (error) {
+                        console.log(error, 'error in parse the location object');
+                    }
+
+                    // note
+                    if (my_event_obj.extendedProps.Note !== undefined) {
+                        my_event_obj.extendedProps.Note.title = getNote();
+                        my_event_obj.extendedProps.Note.Date = my_event_obj.extendedProps.start;
+                        my_event_obj.extendedProps.Note.Time = appointmentTime.value + ':00';
+                        my_event_obj.extendedProps.Note.EndTime = my_event_obj.extendedProps.end.getHours().toString().padStart(2, '0') + ':' + my_event_obj.extendedProps.end.getMinutes().toString().padStart(2, '0');
+                    } else if (getNote() !== '' && getNote() !== undefined) {
+                        my_event_obj.extendedProps.newNoteText = getNote();
+                    }
+
+                    // calendar.addEvent(my_event_obj);
+
+                    sendRequestToParent({
+                        type: "update appointment",
+                        data: my_event_obj
+                    })
+
+                    console.log(my_event_obj)
+
+                    createEventModal.style.display = 'none';
+                    clearNote();
+                };
+
+                createEventModal.style.display = 'block';
+            }
+
+            function dragOrResizeEvent(info) {
+                const my_event_obj = JSON.parse(JSON.stringify(info));
+
+                my_event_obj.extendedProps.start = my_event_obj.start;
+                my_event_obj.extendedProps.end = my_event_obj.end;
+                console.log(my_event_obj, 'plain obj');
+
+                if (my_event_obj.extendedProps.Note !== undefined) {
+                    my_event_obj.extendedProps.Note.Date = my_event_obj.extendedProps.start;
+                    my_event_obj.extendedProps.Note.Time = appointmentTime.value + ':00';
+                    my_event_obj.extendedProps.Note.EndTime = new Date(my_event_obj.extendedProps.end).getHours().toString().padStart(2, '0') + ':' + new Date(my_event_obj.extendedProps.end).getMinutes().toString().padStart(2, '0');
+                }
+
+                sendRequestToParent({
+                    type: "update appointment",
+                    data: my_event_obj
+                })
+
+                console.log(my_event_obj)
+            }
+        }
+
+        const serviceSelectElement = document.getElementById("services");
+        const feeElement = document.getElementById("fee");
+
+        const locationSelectElement = document.getElementById("location");
+
+        // feeElement.onchange = ev => {
+        //     document.getElementById('appointmentTotal').innerText = '$' + feeElement.value;
+        // }
+
+        function populateService() {
+            serviceSelectElement.innerHTML = '';
+
+            // Loop through the data and create an option for each item
+            for (const service of servicesData) {
+                const option = document.createElement("option");
+
+                const titleData = [];
+
+                if (service.ServicesNumber !== undefined) titleData.push(service.ServicesNumber + "");
+                titleData.push(service.title);
+
+                const title = titleData.join(" ");
+
+                if (service.default) {
+                    option.setAttribute("selected", "selected");
+                }
+
+                option.value = service._id; // You can use a unique identifier as the value
+                option.text = title.length > 40 ? title.substring(0, 37) + "..." : title; // `${} - $${}`; // Display title and rate
+                serviceSelectElement.appendChild(option);
+            }
+
+            // {
+            //     "rate": 100,
+            //     "duration": 50,
+            //     "_id": "ffc3e54c-873e-4cc7-afae-f4ffd7c1f6b5",
+            //     "_owner": "62b744fe-a263-461d-9770-118e125327c4",
+            //     "_createdDate": "2023-07-03T04:57:49.570Z",
+            //     "_updatedDate": "2023-09-11T06:51:54.528Z",
+            //     "ServicesNumber": 92523,
+            //     "ServiceProvider": "283a4536-af14-4c70-bdb2-ac1eadabaa5d",
+            //     "title": "Evaluation of speech sound production; with evaluation of language comprehension and expression (e.g., receptive and expressive language)",
+            //     "active": true
+            // }
+        }
+
+        function populateLocation() {
+            locationSelectElement.innerHTML = '';
+
+            // Loop through the data and create an option for each item
+            for (const location of locationData) {
+                const option = document.createElement("option");
+
+                if (location.default) {
+                    option.setAttribute("selected", "selected");
+                }
+
+                option.value = location._id; // You can use a unique identifier as the value
+                option.text = location.officeName || "untitled"; // 
+                locationSelectElement.appendChild(option);
+            }
+        }
+
+        serviceSelectElement.onchange = ev => {
+            try {
+                const selectedServiceID = ev.target.value;
+                // console.log(selectedService, 'service id')
+
+                // let selectedService = {};
+
+                for (let i = 0; i < servicesData.length; i++) {
+                    if (servicesData[i]._id === selectedServiceID) {
+                        document.getElementById('minDuration').value = servicesData[i].duration;
+                        document.getElementById('fee').value = servicesData[i].rate;
+                        // selectedService = servicesData[i];
+
+                        // document.getElementById('appointmentTotal').innerText = '$' + document.getElementById('fee').value;
+                        console.log(servicesData[i]);
+                        break;
+                    }
+                }
+
+            } catch (error) {
+                console.log(error);
+            }
+        }
+
+        // const clientSelectElement = document.getElementById("clientName");
+
+        // TODO:
+        function populateClient() {
+            // clientSelectElement.innerHTML = '';
+
+            document.getElementById('search-results-client').innerHTML = "";
+
+            for (const client of clientData) {
+                // const option = document.createElement("option");
+                // option.value = client._id;
+                // option.text = client.client_detais.info.name.first + " " + client.client_detais.info.name.last || "";
+                // clientSelectElement.appendChild(option);
+
+                // Create a new div element
+                const option = document.createElement("div");
+
+                // Add a class for the hover effect
+                option.classList.add("hover-effect");
+
+                // Set the text content for the div
+                // option.textContent = client.client_detais.info.name.first + " " + client.client_detais.info.name.last || " - " + client.client_detais.primaryInfo?.phone;
+                option.textContent = (client.client_detais.info.name.first + " " + client.client_detais.info.name.last || "") + (client.client_detais.primaryInfo.phone ? " - " + client.client_detais.primaryInfo.phone : "");
+
+                console.log('option set')
+
+
+                // Add a click event listener to the div
+
+
+                // Append the div to the document or a specific container
+                document.getElementById('search-results-client').appendChild(option);
+
+                option.addEventListener("click", () => {
+                    selectedClientDetails = client;
+                    isClientSearch = false;
+                    document.getElementById('search-input-client').value = client.client_detais.info.name.first + " " + client.client_detais.info.name.last || "";
+                    document.getElementById('search-results-client').style.display = "none";
+
+                    visibilityHRLine('0.6');
+                });
+            }
+        }
+
+        document.getElementById('search-input-client').onfocus = ev => {
+            document.getElementById('search-results-client').style.display = "block";
+
+            visibilityHRLine('0');
+        }
+
+        document.addEventListener("click", function (event) {
+            var myDiv = document.getElementById('search-results-client');
+            var clickedElement = event.target;
+            if (!myDiv.contains(clickedElement)) {
+
+                if (document.activeElement === document.getElementById('search-input-client')) {
+                    // alert("The input is in focus.");
+                } else {
+                    document.getElementById('search-results-client').style.display = "none";
+
+                    visibilityHRLine('0.6');
+                }
+            }
+        });
+
+        const visibilityHRLine = (type) => {
+            var hrElements = document.querySelectorAll('hr');
+            for (var i = 0; i < 2 && i < hrElements.length; i++) {
+                hrElements[i].style.opacity = type;
+            }
+        }
+        // search events
+        let debounceClientTimer = undefined;
+
+        document.getElementById('search-input-client').addEventListener('input', (ev) => {
+
+            if (debounceClientTimer) {
+                clearTimeout(debounceClientTimer);
+                debounceClientTimer = undefined;
+            }
+
+            debounceClientTimer = setTimeout(async () => {
+                console.log(ev.target.value, 'client search')
+                sendRequestToParent({
+                    type: "search client",
+                    data: ev.target.value
+                })
+            }, 200);
+        })
+
+        //////////////////////////////////  receive data from parent //////////////////////////////////////// 
+
+        window.addEventListener('message', function (event) {
+
+            // Handle the received message
+            var receivedMessage = event.data;
+            console.log('Received message from parent: ' + receivedMessage);
+
+            if (receivedMessage.type === undefined) {
+                return;
+            }
+
+            if (receivedMessage.type === "client result") {
+                console.log(receivedMessage.type)
+                console.log(receivedMessage.data)
+
+                clientData = receivedMessage.data;
+                populateClient()
+            } else if (receivedMessage.type === "service result") {
+                console.log(receivedMessage.type)
+                console.log(receivedMessage.data)
+
+                servicesData = receivedMessage.data;
+                populateService()
+            } else if (receivedMessage.type === "appoinment list") {
+                console.log(receivedMessage.type)
+                console.log(receivedMessage.data)
+
+                allAppoinments = receivedMessage.data.appoinments;
+                clientLookUpData = receivedMessage.data.clientLookUpData;
+
+                renderCanendar();
+            } else if (receivedMessage.type === "add appoinment") {
+                console.log(receivedMessage.type)
+                console.log(receivedMessage.data)
+
+                calendar.addEvent(receivedMessage.data);
+            } else if (receivedMessage.type === "update appoinment") {
+                console.log(receivedMessage.type)
+                console.log(receivedMessage.data)
+
+                var event = calendar.getEventById(receivedMessage.data.id) // an event object!
+                console.log(event, 'i fr');
+
+                if (event !== null) {
+                    event.setStart(receivedMessage.data.start)
+                    event.setEnd(receivedMessage.data.end)
+
+                    event.setProp('backgroundColor', receivedMessage.data.backgroundColor)
+
+                    const propertiesToUpdate = [
+                        'start', 'end', 'Fee', 'Service', 'Duration', 'backgroundColor', 'Location', 'Status', "ClientRelationship", "Note"
+                    ];
+
+                    for (let i = 0; i < propertiesToUpdate.length; i++) {
+                        event.setExtendedProp(propertiesToUpdate[i], receivedMessage.data.extendedProps[propertiesToUpdate[i]] || "");
+                    }
+                }
+            } else if (receivedMessage.type === "delete appoinment") {
+                console.log(receivedMessage.type)
+                console.log(receivedMessage.data)
+
+                var event = calendar.getEventById(receivedMessage.data.id) // an event object!
+                console.log(event, 'i fr');
+
+                if (event !== null) {
+                    event.remove()
+                }
+            } else if (receivedMessage.type === "create client appoinment") {
+                console.log(receivedMessage.type)
+                console.log(receivedMessage.data)
+
+                isClientDetailsProvided = true;
+                selectedClientDetails = receivedMessage.data;
+
+                const info = {
+                    start: Date.now(),
+                    end: Date.now() + 1000 * 60 * 60,
+                    allDay: false
+                }
+
+                openCreateEventModal(info);
+            } else if (receivedMessage.type === "create general appointment") {
+                console.log(receivedMessage.type)
+                console.log(receivedMessage.data)
+
+                const info = {
+                    start: Date.now(),
+                    end: Date.now() + 1000 * 60 * 60,
+                    allDay: false
+                }
+
+                openCreateEventModal(info);
+            } else if (receivedMessage.type === "location result") {
+                console.log(receivedMessage.type)
+                console.log(receivedMessage.data)
+
+                locationData = receivedMessage.data;
+                populateLocation();
+            }
+        });
+
+        //////////////////////////////////////////// sending data to parent //////////////////////////////////////////////
+        function sendRequestToParent(data) {
+            window.parent.postMessage(data, '*');
+        }
+
+        ////////////////////////////////////////////// test //////////////////////////////////////////////////////////////
+        function test() {
+            allAppoinments = [
+                {
+                    "id": "36adb88a-1d41-4455-934b-f184f7494eb2",
+                    "title": "test f abc l",
+                    "start": "2023-10-10T03:00:00.000Z",
+                    "end": "2023-09-10T03:30:00.000Z",
+                    "allDay": false,
+                    "backgroundColor": "#568ED3",
+                    "extendedProps": {
+                        "Client": "e3a11028-4902-445f-9ee8-c2c9fcd4cd73",
+                        "Duration": 30,
+                        "Fee": 5,
+                        "Service": "3817bf2b-66d1-46f4-a92c-a2a806c2de83",
+                        "appointmentId": "36adb88a-1d41-4455-934b-f184f7494eb2",
+                        "start": "2023-10-10T03:00:00.000Z",
+                        "end": "2023-10-10T03:30:00.000Z",
+                        "backgroundColor": "#568ED3",
+                        "Location": ""
+                    }
+                },
+                {
+                    "id": "7b959bcc-f348-47cb-84b2-fe00ace02cf1",
+                    "title": "Keren1 Amitai",
+                    "start": "2023-10-14T08:24:00.000Z",
+                    "end": "2023-10-14T09:14:00.000Z",
+                    "allDay": false,
+                    "backgroundColor": "#4dff00",
+                    "extendedProps": {
+                        "Client": "d6ae11c0-8bc8-4238-b4e1-d35a46c87f5b",
+                        "Duration": 50,
+                        "Fee": 90,
+                        "Service": "ef9c66e9-9c60-4804-b7ec-55605301d37f",
+                        "appointmentId": "7b959bcc-f348-47cb-84b2-fe00ace02cf1",
+                        "start": "2023-09-14T08:24:00.000Z",
+                        "end": "2023-09-14T09:14:00.000Z",
+                        "backgroundColor": "#4dff00",
+                        "Location": ""
+                    }
+                },
+                {
+                    "id": "d11dcce0-690a-4bc9-89e0-7bbfd6c034e7",
+                    "title": "Keren1 Amitai",
+                    "start": "2023-10-11T06:30:00.000Z",
+                    "end": "2023-10-11T07:20:00.000Z",
+                    "allDay": false,
+                    "backgroundColor": "#568ED3",
+                    "extendedProps": {
+                        "Client": "d6ae11c0-8bc8-4238-b4e1-d35a46c87f5b",
+                        "Duration": 50,
+                        "Fee": 100,
+                        "Service": "a6bb1ef3-f3df-4eaa-b179-703e1320ce69",
+                        "appointmentId": "d11dcce0-690a-4bc9-89e0-7bbfd6c034e7",
+                        "start": "2023-10-11T06:30:00.000Z",
+                        "end": "2023-10-11T07:20:00.000Z",
+                        "backgroundColor": "#568ED3",
+                        "Location": ""
+                    }
+                },
+                {
+                    "id": "9b3c51bb-8450-435b-b310-5c8deab92aab",
+                    "title": "Ofir2 Amitai2",
+                    "start": "2023-10-21T04:00:00.000Z",
+                    "end": "2023-10-21T04:50:00.000Z",
+                    "allDay": false,
+                    "backgroundColor": "#568ED3",
+                    "extendedProps": {
+                        "Client": "deb6a553-1945-4e96-9d6c-6e7111383570",
+                        "Duration": 50,
+                        "Fee": 100,
+                        "Service": "f03912c9-2371-4f6d-b258-6c0826b82423",
+                        "appointmentId": "9b3c51bb-8450-435b-b310-5c8deab92aab",
+                        "start": "2023-10-21T04:00:00.000Z",
+                        "end": "2023-10-21T04:50:00.000Z",
+                        "backgroundColor": "#568ED3",
+                        "Location": ""
+                    }
+                },
+                {
+                    "id": "448bff4b-eb6e-4931-91f9-d4e41c885295",
+                    "title": "Ofir4 Amitai4",
+                    "start": "2023-10-19T04:30:00.000Z",
+                    "end": "2023-10-19T07:30:00.000Z",
+                    "allDay": false,
+                    "backgroundColor": "#568ED3",
+                    "extendedProps": {
+                        "Client": "d91fed1f-778d-44a8-bf7a-10abecca3ab1",
+                        "Duration": 180,
+                        "Fee": 100,
+                        "Service": "d01a05a4-c886-4ce6-a8e8-d1fdb22b9b8c",
+                        "appointmentId": "448bff4b-eb6e-4931-91f9-d4e41c885295",
+                        "start": "2023-10-19T04:30:00.000Z",
+                        "end": "2023-10-19T07:30:00.000Z",
+                        "backgroundColor": "#568ED3",
+                        "Location": ""
+                    }
+                }
+            ]
+
+            clientData = [
+                {
+                    "_id": "37b29b82-9db9-4dae-90ba-f60cefd10b12",
+                    "link-clientrelationship-title": "/client-info/d91fed1f-778d-44a8-bf7a-09abecca3ab1",
+                    "link-clientrelationship-1-title": "/edit-client/d91fed1f-778d-44a8-bf7a-09abecca3ab1",
+                    "DefaultLocation": "",
+                    "link-client-info-billing-primaryClient": "/client-info/d91fed1f-778d-44a8-bf7a-09abecca3ab1/billing",
+                    "client_detais": {
+                        "_createdDate": "2023-07-16T09:03:01.143Z",
+                        "_id": "1513be2b-97ba-4959-92e1-2761715f5283",
+                        "info": {
+                            "emails": [
+                                {
+                                    "_id": "e06dec83-6718-4f91-88e3-4a7a9b79d32a",
+                                    "tag": "UNTAGGED",
+                                    "email": "ofir700@cloudial.io",
+                                    "primary": true
+                                }
+                            ],
+                            "extendedFields": {
+                                "contacts.displayByLastName": "abc l test f",
+                                "emailSubscriptions.deliverabilityStatus": "NOT_SET",
+                                "emailSubscriptions.subscriptionStatus": "NOT_SET",
+                                "emailSubscriptions.effectiveEmail": "ofir700@cloudial.io",
+                                "contacts.displayByFirstName": "test f abc l"
+                            },
+                            "locale": "en-us",
+                            "name": {
+                                "first": "test f",
+                                "last": "abc l"
+                            },
+                            "phones": [
+                                {
+                                    "_id": "beaaddf9-aaae-435f-94f5-29d0712b0310",
+                                    "tag": "UNTAGGED",
+                                    "phone": "123123123",
+                                    "primary": true
+                                }
+                            ],
+                            "picture": {}
+                        },
+                        "lastActivity": {
+                            "activityDate": "2023-07-16T09:03:01.140Z",
+                            "activityType": "CONTACT_CREATED"
+                        },
+                        "primaryInfo": {
+                            "email": "ofir700@cloudial.io",
+                            "phone": "123123123"
+                        },
+                        "revision": 1,
+                        "source": {
+                            "appId": "151e476a-715e-ec33-db9a-a7ff4d51f70a",
+                            "sourceType": "WIX_CODE"
+                        },
+                        "_updatedDate": "2023-07-16T09:03:01.143Z"
+                    }
+                },
+                {
+                    "link-clientrelationship-title": "/client-info/deb6a553-1945-4e96-9d6c-6e7111383570",
+                    "link-clientrelationship-1-title": "/edit-client/deb6a553-1945-4e96-9d6c-6e7111383570",
+                    "link-client-info-billing-primaryClient": "/client-info/deb6a553-1945-4e96-9d6c-6e7111383570/billing",
+                    "_id": "fb8f16c2-b78e-4f0c-9b93-2ac369be7782",
+                    "client_detais": {
+                        "_createdDate": "2023-07-23T04:44:42.113Z",
+                        "_id": "e3a11028-4902-445f-9ee8-c2c9fcd4cd73",
+                        "info": {
+                            "emails": [
+                                {
+                                    "_id": "db9f8c82-b60c-4cc3-ab4a-5f6772ee3116",
+                                    "tag": "UNTAGGED",
+                                    "email": "ofir202@cloudial.io",
+                                    "primary": true
+                                }
+                            ],
+                            "extendedFields": {
+                                "contacts.displayByLastName": "abc l test f",
+                                "emailSubscriptions.deliverabilityStatus": "NOT_SET",
+                                "emailSubscriptions.subscriptionStatus": "NOT_SET",
+                                "emailSubscriptions.effectiveEmail": "ofir202@cloudial.io",
+                                "contacts.displayByFirstName": "test f abc l"
+                            },
+                            "locale": "en-us",
+                            "name": {
+                                "first": "test f",
+                                "last": "abc l"
+                            },
+                            "phones": [
+                                {
+                                    "_id": "c2b31cf7-aad0-4a2d-8f19-13d3e2194f4a",
+                                    "tag": "UNTAGGED",
+                                    "phone": "7896541237",
+                                    "primary": true
+                                }
+                            ],
+                            "picture": {}
+                        },
+                        "lastActivity": {
+                            "activityDate": "2023-07-23T04:44:42.109Z",
+                            "activityType": "CONTACT_CREATED"
+                        },
+                        "primaryInfo": {
+                            "email": "ofir202@cloudial.io",
+                            "phone": "7896541237"
+                        },
+                        "revision": 1,
+                        "source": {
+                            "appId": "151e476a-715e-ec33-db9a-a7ff4d51f70a",
+                            "sourceType": "WIX_CODE"
+                        },
+                        "_updatedDate": "2023-07-23T04:44:42.113Z"
+                    }
+                },
+                {
+                    "link-clientrelationship-title": "/client-info/d76c55e2-3387-4cf5-831d-b40fb4aa1d65",
+                    "link-clientrelationship-1-title": "/edit-client/d76c55e2-3387-4cf5-831d-b40fb4aa1d65",
+                    "link-client-info-billing-primaryClient": "/client-info/d76c55e2-3387-4cf5-831d-b40fb4aa1d65/billing",
+                    "_id": "3b969870-1425-4642-83de-29b4cfac37b7",
+                    "client_detais": {
+                        "_createdDate": "2023-07-30T12:46:49.444Z",
+                        "_id": "d76c55e2-3387-4cf5-831d-b40fb4aa1d65",
+                        "info": {
+                            "emails": [
+                                {
+                                    "_id": "6d69e4c7-9515-47a4-9b0d-d63b1a9eb889",
+                                    "tag": "UNTAGGED",
+                                    "email": "ofir@gmail.com",
+                                    "primary": true
+                                }
+                            ],
+                            "extendedFields": {
+                                "contacts.displayByLastName": "Amitai3 OFir3",
+                                "emailSubscriptions.deliverabilityStatus": "NOT_SET",
+                                "emailSubscriptions.subscriptionStatus": "NOT_SET",
+                                "emailSubscriptions.effectiveEmail": "ofir@gmail.com",
+                                "contacts.displayByFirstName": "OFir3 Amitai3"
+                            },
+                            "locale": "en-us",
+                            "name": {
+                                "first": "OFir3",
+                                "last": "Amitai3"
+                            },
+                            "phones": [
+                                {
+                                    "_id": "7a8680a2-be7f-4359-8a57-9ec5f115c867",
+                                    "tag": "UNTAGGED",
+                                    "phone": "314-7654321",
+                                    "primary": true
+                                }
+                            ],
+                            "picture": {}
+                        },
+                        "lastActivity": {
+                            "activityDate": "2023-07-30T12:46:49.442Z",
+                            "activityType": "CONTACT_CREATED"
+                        },
+                        "primaryInfo": {
+                            "email": "ofir@gmail.com",
+                            "phone": "314-7654321"
+                        },
+                        "revision": 1,
+                        "source": {
+                            "appId": "151e476a-715e-ec33-db9a-a7ff4d51f70a",
+                            "sourceType": "WIX_CODE"
+                        },
+                        "_updatedDate": "2023-07-30T12:46:49.444Z"
+                    }
+                },
+                {
+                    "link-clientrelationship-title": "/client-info/e3a11028-4902-445f-9ee8-c2c9fcd4cd73",
+                    "link-clientrelationship-1-title": "/edit-client/e3a11028-4902-445f-9ee8-c2c9fcd4cd73",
+                    "link-client-info-billing-primaryClient": "/client-info/e3a11028-4902-445f-9ee8-c2c9fcd4cd73/billing",
+                    "_id": "c76b180a-5b5a-4aef-b688-a84b0ddd15d6",
+                    "client_detais": {
+                        "_createdDate": "2023-07-31T05:31:01.529Z",
+                        "_id": "deb6a553-1945-4e96-9d6c-6e7111383570",
+                        "info": {
+                            "emails": [
+                                {
+                                    "_id": "30d97427-5efb-4ab6-91f3-814d788997f1",
+                                    "tag": "UNTAGGED",
+                                    "email": "ofir2@gmail.com",
+                                    "primary": true
+                                }
+                            ],
+                            "extendedFields": {
+                                "contacts.displayByLastName": "Amitai2 Ofir2",
+                                "emailSubscriptions.deliverabilityStatus": "NOT_SET",
+                                "emailSubscriptions.subscriptionStatus": "NOT_SET",
+                                "emailSubscriptions.effectiveEmail": "ofir2@gmail.com",
+                                "contacts.displayByFirstName": "Ofir2 Amitai2"
+                            },
+                            "locale": "en-us",
+                            "name": {
+                                "first": "Ofir2",
+                                "last": "Amitai2"
+                            },
+                            "phones": [
+                                {
+                                    "_id": "9d874fea-1e44-428a-8403-18e72b11fd28",
+                                    "tag": "UNTAGGED",
+                                    "phone": "5321636632",
+                                    "primary": true
+                                }
+                            ],
+                            "picture": {}
+                        },
+                        "lastActivity": {
+                            "activityDate": "2023-07-31T05:31:01.525Z",
+                            "activityType": "CONTACT_CREATED"
+                        },
+                        "primaryInfo": {
+                            "email": "ofir2@gmail.com",
+                            "phone": "5321636632"
+                        },
+                        "revision": 1,
+                        "source": {
+                            "appId": "151e476a-715e-ec33-db9a-a7ff4d51f70a",
+                            "sourceType": "WIX_CODE"
+                        },
+                        "_updatedDate": "2023-07-31T05:31:01.529Z"
+                    }
+                }
+            ];
+
+            servicesData = [
+                {
+                    "rate": 120,
+                    "duration": 120,
+                    "custom": true,
+                    "_id": "3817bf2b-66d1-46f4-a92c-a2a806c2de83",
+                    "_owner": "26e6f4e5-1e95-468f-8f33-c671f409183f",
+                    "_createdDate": "2023-09-12T10:57:42.991Z",
+                    "_updatedDate": "2023-09-12T10:57:42.991Z",
+                    "ServicesNumber": 123,
+                    "ServiceProvider": "283a4536-af14-4c70-bdb2-ac1eadabaa5d",
+                    "title": "test",
+                    "Color": "#ff7300",
+                    "active": true
+                },
+                {
+                    "rate": 100,
+                    "duration": 50,
+                    "_id": "a6bb1ef3-f3df-4eaa-b179-703e1320ce69",
+                    "_owner": "62b744fe-a263-461d-9770-118e125327c4",
+                    "_createdDate": "2023-07-03T04:59:03.174Z",
+                    "_updatedDate": "2023-09-11T06:51:43.361Z",
+                    "ServicesNumber": 96125,
+                    "ServiceProvider": "283a4536-af14-4c70-bdb2-ac1eadabaa5d",
+                    "title": "Standardized cognitive performance testing ",
+                    "active": true
+                },
+                {
+                    "rate": 100,
+                    "duration": 50,
+                    "_id": "269df9e3-9dd6-4009-bd69-d57504923e91",
+                    "_owner": "62b744fe-a263-461d-9770-118e125327c4",
+                    "_createdDate": "2023-07-03T04:56:43.395Z",
+                    "_updatedDate": "2023-09-11T06:52:00.723Z",
+                    "ServicesNumber": 92520,
+                    "ServiceProvider": "283a4536-af14-4c70-bdb2-ac1eadabaa5d",
+                    "title": "Laryngeal function studies",
+                    "active": true,
+                    "default": true
+                },
+                {
+                    "rate": 100,
+                    "duration": 50,
+                    "_id": "754a9096-0353-4ca0-a4ba-2e57374f8f82",
+                    "_owner": "62b744fe-a263-461d-9770-118e125327c4",
+                    "_createdDate": "2023-07-03T04:56:32.400Z",
+                    "_updatedDate": "2023-09-11T06:52:02.672Z",
+                    "ServicesNumber": 92507,
+                    "ServiceProvider": "283a4536-af14-4c70-bdb2-ac1eadabaa5d",
+                    "title": "Treatment of speech, language, voice, communication, and/or auditory processing disorder; individual",
+                    "active": true
+                }
+            ];
+
+
+            locationData = [
+                {
+                    "city": "Vineland",
+                    "zip": "08360",
+                    "state": "Minnesota",
+                    "_id": "loc-1694584226667",
+                    "officeName": "School",
+                    "default": false,
+                    "street": "Washinton Avenue"
+                },
+                {
+                    "city": "Vineland",
+                    "zip": "08360",
+                    "state": "Arkansas",
+                    "_id": "loc-1694610129991",
+                    "officeName": "test",
+                    "default": true,
+                    "street": "Washinton Avenue"
+                }
+            ];
+
+
+            renderCanendar();
+
+            populateClient();
+            populateService();
+            populateLocation();
+
+            renderCanendar();
+        }
+
+        test();
+    </script>
+</body>
+
+</html>
