@@ -671,6 +671,8 @@
                             event.stopPropagation();
                             console.log('zoom...')
 
+                            window.open(arg.event.extendedProps.ZoomLink, '_blank');
+
                             //sendRequestToParent({
                             //    type: "create appointment",
                             //   data: my_event_obj
@@ -1335,7 +1337,7 @@
                     event.setProp('backgroundColor', receivedMessage.data.backgroundColor)
 
                     const propertiesToUpdate = [
-                        'start', 'end', 'Fee', 'Service', 'Duration', 'backgroundColor', 'Location', 'Status', "ClientRelationship", "Note"
+                        'start', 'end', 'Fee', 'Service', 'Duration', 'backgroundColor', 'Location', 'Status', "ClientRelationship", "Note", "ZoomLink", "MeetingHost"
                     ];
 
                     for (let i = 0; i < propertiesToUpdate.length; i++) {
