@@ -957,6 +957,10 @@
         let openCreateEventModal = undefined;
         let isClientDetailsProvided = false;
 
+        //
+        let lowerBoundDate_ForFilter = new Date();
+        let upperBoundDate_ForFilter = new Date();
+
         // document.addEventListener('DOMContentLoaded', function () {
 
         // });
@@ -1138,6 +1142,33 @@
                     let updatedEvent = info.event.toPlainObject(); // Convert the event to a plain object
                     dragOrResizeEvent(updatedEvent)
                 },
+                datesSet: function (info) {
+                    // The datesSet callback is triggered when the date range changes,
+                    // including when the "next" button is clicked.
+
+                    // You can access the new start and end dates from the info parameter.
+                    var startDate = new Date(info.start);
+                    var endDate = new Date(info.end);
+
+                    //const setStartDate = startDate < lowerBoundDate_ForFilter ? startDate : lowerBoundDate_ForFilter;
+                    //const setEndDate = endDate > upperBoundDate_ForFilter ? endDate : upperBoundDate_ForFilter;
+
+                    const aptIds = allAppoinments
+                        .map(item => item.extendedProps.appointmentId)
+                        .filter(item => item != undefined);
+
+                    console.log(aptIds, 'aptIds')
+
+                    const data = {
+                        type: "fetch appointments with date",
+                        data: {
+                            appointmentIds: aptIds,
+                            startDate: startDate,
+                            endDate: endDate
+                        }
+                    };
+                    sendRequestToParent(data);
+                }
             });
 
             calendar.render();
@@ -1764,7 +1795,9 @@
                 return;
             }
 
-            if (receivedMessage.type === "client result") {
+            if (receivedMessage.type === "render calendar") {
+                renderCanendar();
+            } else if (receivedMessage.type === "client result") {
                 console.log(receivedMessage.type)
                 console.log(receivedMessage.data)
 
@@ -1780,15 +1813,20 @@
                 console.log(receivedMessage.type)
                 console.log(receivedMessage.data)
 
-                allAppoinments = receivedMessage.data.appoinments;
+                allAppoinments = [...allAppoinments, ...receivedMessage.data.appoinments];
                 clientLookUpData = receivedMessage.data.clientLookUpData;
 
-                renderCanendar();
+                for (let i = 0; i < receivedMessage.data.appoinments.length; i++) {
+                    calendar.addEvent(receivedMessage.data.appoinments[i]);
+                }
+
+                // renderCanendar();
             } else if (receivedMessage.type === "add appoinment") {
                 console.log(receivedMessage.type)
                 console.log(receivedMessage.data)
 
                 calendar.addEvent(receivedMessage.data);
+                allAppoinments.push(receivedMessage.data);
             } else if (receivedMessage.type === "update appoinment") {
                 console.log(receivedMessage.type)
                 console.log(receivedMessage.data)
