@@ -249,14 +249,18 @@
             padding: 10px;
         }
 
-        #search-input-client {
+        #search-input-client,
+        #search-input-service,
+        #search-input-location {
             /* display: none; */
             width: calc(100% - 23px);
             padding: 5px 10px;
             /* margin-left: 10px; */
         }
 
-        #search-results-client {
+        #search-results-client,
+        #search-results-service,
+        #search-results-location {
             display: none;
             position: absolute;
             background-color: #fff;
@@ -269,6 +273,7 @@
             border-radius: 3px;
 
             overflow: hidden;
+            z-index: 20;
             /* border-bottom-right-radius: 3px; */
             /* or 'fixed' depending on your requirements */
             /* top: 0; */
@@ -483,18 +488,10 @@
 
                 <div style="display: flex; justify-content: space-between; position:relative" id="service-container">
                     <span style="width: calc(100% - 70px);">
-                        <label for="services">Services</label>
+                        <label for="search-input-service">Services</label>
                         <br>
-                        <select id="services" name="services">
-                            <option
-                                value="92507 Treatment of speech, language, voice, communication, and/or auditory processing disorder; individual"
-                                selected>
-                                92507 Treatment of speech, language, voice, communication, and/or auditory
-                                processing
-                                disorder; individual
-                            </option>
-                            <!-- Add other service options as needed -->
-                        </select>
+                        <input type="text" id="search-input-service" placeholder="Search your services...">
+                        <div id="search-results-service" class="column"></div>
                     </span>
 
                     <span>
@@ -508,10 +505,6 @@
                     $5</div>
 
                 <hr>
-
-                <!-- <input type="checkbox" id="allDay" name="allDay">
-                <label for="allDay">All Day</label>
-                <br> -->
 
                 <div style="display: flex; justify-content: space-between;">
                     <div>
@@ -528,28 +521,18 @@
                 <hr>
 
                 <span id="location-container" style="position: relative;">
-                    <label for="location">Location</label>
+                    <!-- <label for="location">Location</label>
                     <select id="location" name="location">
-                        <!-- Add location options as needed -->
                         <option value="" disabled selected>Location Unassigned</option>
-                    </select>
+                    </select> -->
+
+                    <label for="search-input-location">Location</label>
+                    <br>
+                    <input type="text" id="search-input-location" placeholder="Search your locations...">
+                    <div id="search-results-location" class="column"></div>
                 </span>
 
                 <br>
-
-                <!-- <hr>
-
-                <div style="display: flex; justify-content: space-between;">
-                    <span>Billing Type:</span>
-                    <span>Self-pay</span>
-                </div>
-
-                <br>
-
-                <div style="display: flex; justify-content: space-between;">
-                    <span>Appointment Total:</span>
-                    <span id="appointmentTotal">$100</span>
-                </div> -->
 
                 <div id="rech-text-box">
                     <hr>
@@ -877,13 +860,13 @@
         }
 
         // hide service tooltip on click
-        document.getElementById('services').onclick = ev => {
-            if (isTooltip) document.getElementById('serviceTooltip').innerHTML = '';
-        }
+        // document.getElementById('services').onclick = ev => {
+        //     if (isTooltip) document.getElementById('serviceTooltip').// innerHTML = '';
+        // }
         // hide location tooltip on click
-        document.getElementById('location').onclick = ev => {
-            if (isTooltip) document.getElementById('createLocationTooltip').innerHTML = '';
-        }
+        //document.getElementById('location').onclick = ev => {
+        //    if (isTooltip) document.getElementById('createLocationTooltip').innerHTML = '';
+        //}
 
         const closeAllTooltips = () => {
             isTooltip = false;
@@ -949,6 +932,8 @@
         ];
 
         let selectedClientDetails = {};
+        let selectedServiceDetails = {};
+        let selectedLocationDetails = {};
         let isClientSearch = false;
         let calendar = null;
         let allAppoinments = [];
@@ -1194,7 +1179,7 @@
             const appointmentTime = document.getElementById('appointmentTime');
             const minDuration = document.getElementById('minDuration');
 
-            const location = document.getElementById('location'); // TODO: location obj missing
+            // const location = document.getElementById('location'); // TODO: location obj missing
 
             const services = document.getElementById('services');
             const fee = document.getElementById('fee');
@@ -1316,17 +1301,17 @@
 
                     // set services
                     try {
-                        let serviceDetails = {};
-                        const serviceID = services.value;
+                        // let serviceDetails = {};
+                        // const serviceID = services.value;
+                        // 
+                        // for (let i = 0; i < servicesData.length; i++) {
+                        //     if (servicesData[i]._id === serviceID) {
+                        //         serviceDetails = servicesData[i];
+                        //         break;
+                        //     }
+                        // }
 
-                        for (let i = 0; i < servicesData.length; i++) {
-                            if (servicesData[i]._id === serviceID) {
-                                serviceDetails = servicesData[i];
-                                break;
-                            }
-                        }
-
-                        my_event_obj.extendedProps.Service = serviceDetails;
+                        my_event_obj.extendedProps.Service = selectedServiceDetails;
                     } catch (error) {
                         console.log(error, 'error in parse the service object');
                     }
@@ -1334,7 +1319,7 @@
                     // set locations
                     try {
                         // locationData
-                        let locationDetails = {};
+                        /* let locationDetails = {};
                         const locationId = location.value;
 
                         for (let i = 0; i < locationData.length; i++) {
@@ -1342,9 +1327,9 @@
                                 locationDetails = locationData[i];
                                 break;
                             }
-                        }
+                        } */
 
-                        my_event_obj.extendedProps.Location = locationDetails;
+                        my_event_obj.extendedProps.Location = selectedLocationDetails;
                     } catch (error) {
                         console.log(error, 'error in parse the location object');
                     }
@@ -1409,6 +1394,14 @@
                 // show appointment status box
                 appointmentStatusBox.style.display = "block";
 
+                // service
+                //services.value = my_event_obj.extendedProps.Service;
+                const myServiceId = my_event_obj.extendedProps.Service;
+                setCurrentService(myServiceId);
+
+                // location
+                const locationId = my_event_obj.extendedProps.Location;
+                setCurrentLocation(locationId);
 
                 // date, start time, duration
                 const startDate = new Date(my_event_obj.start);
@@ -1422,9 +1415,8 @@
                 // duration
                 minDuration.value = Math.floor((endDate.getTime() - startDate.getTime()) / (1000 * 60));
 
-                // service
-                services.value = my_event_obj.extendedProps.Service;
-                location.value = my_event_obj.extendedProps.Location;
+
+
 
                 fee.value = my_event_obj.extendedProps.Fee;
 
@@ -1483,7 +1475,7 @@
                     // set services
                     try {
                         let serviceDetails = {};
-                        const serviceID = services.value;
+                        const serviceID = selectedServiceDetails ? selectedServiceDetails._id : my_event_obj.extendedProps.Service;
 
                         for (let i = 0; i < servicesData.length; i++) {
                             if (servicesData[i]._id === serviceID) {
@@ -1501,7 +1493,7 @@
                     try {
                         // locationData
                         let locationDetails = {};
-                        const locationId = location.value;
+                        const locationId = selectedLocationDetails ? selectedLocationDetails._id : my_event_obj.extendedProps.Location;
 
                         for (let i = 0; i < locationData.length; i++) {
                             if (locationData[i]._id === locationId) {
@@ -1582,53 +1574,130 @@
         //     document.getElementById('appointmentTotal').innerText = '$' + feeElement.value;
         // }
 
-        function populateService() {
-            serviceSelectElement.innerHTML = '';
+        const setCurrentService = (service) => {
+            if (!service) return;
 
-            // Loop through the data and create an option for each item
+            if (typeof service === "string") {
+                const selectedService = servicesData.filter(item => item._id === service);
+                if (selectedService.length > 0) {
+                    service = selectedService[0];
+                } else {
+                    return;
+                }
+            }
+
+            selectedServiceDetails = service;
+
+            const titleData = [];
+            if (service.ServicesNumber !== undefined) titleData.push(service.ServicesNumber + "");
+            titleData.push(service.title);
+
+            const title = titleData.join(" ");
+
+            document.getElementById('search-input-service').value = title.length > 40 ? title.substring(0, 37) + "..." : title;
+            document.getElementById('minDuration').value = service.duration;
+            document.getElementById('fee').value = service.rate;
+
+            //
+            document.getElementById('search-results-service').style.display = "none";
+        };
+
+        const setCurrentLocation = (location) => {
+            if (!location) return;
+
+            if (typeof location === "string") {
+                const selectedLocation = locationData.filter(item => item._id === location);
+                if (selectedLocation.length > 0) {
+                    location = selectedLocation[0];
+                } else {
+                    return;
+                }
+            }
+
+            selectedLocationDetails = location;
+
+            const address = [];
+
+            if (location.city) address.push(location.city);
+            if (location.zip) address.push(location.zip);
+            if (location.state) address.push(location.state);
+            if (location.street) address.push(location.street);
+
+            document.getElementById('search-input-location').value = location.officeName ? location.officeName + (address.length > 0 ? ' - ' + address.join(', ') : '') : "untitled";
+
+            //
+            document.getElementById('search-results-location').style.display = "none";
+        }
+
+        function populateService() {
+            document.getElementById('search-results-service').innerHTML = "";
+
             for (const service of servicesData) {
-                const option = document.createElement("option");
+                // Create a new div element
+                const option = document.createElement("div");
+
+                // Add a class for the hover effect
+                option.classList.add("hover-effect");
 
                 const titleData = [];
-
                 if (service.ServicesNumber !== undefined) titleData.push(service.ServicesNumber + "");
                 titleData.push(service.title);
 
                 const title = titleData.join(" ");
 
+                option.textContent = title.length > 40 ? title.substring(0, 37) + "..." : title;
+
+                console.log('option set')
+
                 if (service.default) {
-                    option.setAttribute("selected", "selected");
+                    setCurrentService(service);
                 }
 
-                option.value = service._id; // You can use a unique identifier as the value
-                option.text = title.length > 40 ? title.substring(0, 37) + "..." : title; // `${} - $${}`; // Display title and rate
-                serviceSelectElement.appendChild(option);
+                // Append the div to the document or a specific container
+                document.getElementById('search-results-service').appendChild(option);
+
+                option.addEventListener("click", () => {
+                    isServiceSearch = false;
+
+                    setCurrentService(service);
+                });
             }
 
-            // {
-            //     "rate": 100,
-            //     "duration": 50,
-            //     "_id": "ffc3e54c-873e-4cc7-afae-f4ffd7c1f6b5",
-            //     "_owner": "62b744fe-a263-461d-9770-118e125327c4",
-            //     "_createdDate": "2023-07-03T04:57:49.570Z",
-            //     "_updatedDate": "2023-09-11T06:51:54.528Z",
-            //     "ServicesNumber": 92523,
-            //     "ServiceProvider": "283a4536-af14-4c70-bdb2-ac1eadabaa5d",
-            //     "title": "Evaluation of speech sound production; with evaluation of language comprehension and expression (e.g., receptive and expressive language)",
-            //     "active": true
-            // }
+            // adding message for empty array of clients
+            if (servicesData.length < 1) {
+                const noServiceFound = document.createElement('p');
+                noServiceFound.innerText = 'No service found.';
+                document.getElementById('search-results-service').appendChild(noServiceFound);
+            }
+
+            // creating add client button and setting event listemers
+            const addClientBtn = document.createElement('button');
+            addClientBtn.id = 'create-client-btn';
+            addClientBtn.innerText = 'Add New Service';
+            addClientBtn.className = 'modalBtn';
+            addClientBtn.style.marginTop = '5px';
+
+            addClientBtn.addEventListener("click", (e) => {
+                e.preventDefault();
+
+                sendRequestToParent({
+                    type: "create new service",
+                    data: ''
+                })
+            })
+
+            document.getElementById('search-results-service').appendChild(addClientBtn);
         }
 
         function populateLocation() {
-            locationSelectElement.innerHTML = '';
+            document.getElementById('search-results-location').innerHTML = "";
 
-            // Loop through the data and create an option for each item
             for (const location of locationData) {
-                const option = document.createElement("option");
+                // Create a new div element
+                const option = document.createElement("div");
 
-                if (location.default) {
-                    option.setAttribute("selected", "selected");
-                }
+                // Add a class for the hover effect
+                option.classList.add("hover-effect");
 
                 const address = [];
 
@@ -1637,37 +1706,47 @@
                 if (location.state) address.push(location.state);
                 if (location.street) address.push(location.street);
 
-                option.value = location._id; // You can use a unique identifier as the value
-                option.text = location.officeName ? location.officeName + (address.length > 0 ? ' - ' + address.join(', ') : '') : "untitled"; // 
-                locationSelectElement.appendChild(option);
-            }
-        }
+                option.textContent = location.officeName ? location.officeName + (address.length > 0 ? ' - ' + address.join(', ') : '') : "untitled";
+                //
 
-        serviceSelectElement.onchange = ev => {
-            try {
-                const selectedServiceID = ev.target.value;
-                // console.log(selectedService, 'service id')
-
-                // let selectedService = {};
-
-                for (let i = 0; i < servicesData.length; i++) {
-                    if (servicesData[i]._id === selectedServiceID) {
-                        document.getElementById('minDuration').value = servicesData[i].duration;
-                        document.getElementById('fee').value = servicesData[i].rate;
-                        // selectedService = servicesData[i];
-
-                        // document.getElementById('appointmentTotal').innerText = '$' + document.getElementById('fee').value;
-                        console.log(servicesData[i]);
-                        break;
-                    }
+                if (location.default) {
+                    setCurrentLocation(location);
                 }
 
-            } catch (error) {
-                console.log(error);
+                // Append the div to the document or a specific container
+                document.getElementById('search-results-location').appendChild(option);
+
+                option.addEventListener("click", () => {
+                    setCurrentLocation(location);
+                });
             }
+
+            // adding message for empty array of clients
+            if (locationData.length < 1) {
+                const noLocationFound = document.createElement('p');
+                noLocationFound.innerText = 'No location found.';
+                document.getElementById('search-results-location').appendChild(noLocationFound);
+            }
+
+            // creating add client button and setting event listemers
+            const addClientBtn = document.createElement('button');
+            addClientBtn.id = 'create-location-btn';
+            addClientBtn.innerText = 'Add New Location';
+            addClientBtn.className = 'modalBtn';
+            addClientBtn.style.marginTop = '5px';
+
+            addClientBtn.addEventListener("click", (e) => {
+                e.preventDefault();
+
+                sendRequestToParent({
+                    type: "create new location",
+                    data: ''
+                })
+            })
+
+            document.getElementById('search-results-location').appendChild(addClientBtn);
         }
 
-        // const clientSelectElement = document.getElementById("clientName");
 
         // TODO:
         function populateClient() {
@@ -1707,6 +1786,8 @@
                     document.getElementById('search-results-client').style.display = "none";
 
                     visibilityHRLine('0.6');
+
+                    console.log('selected client', client);
                 });
             }
 
@@ -1720,7 +1801,7 @@
             // creating add client button and setting event listemers
             const addClientBtn = document.createElement('button');
             addClientBtn.id = 'create-client-btn';
-            addClientBtn.innerText = 'Add Client';
+            addClientBtn.innerText = 'Add New Client';
             addClientBtn.className = 'modalBtn';
             addClientBtn.style.marginTop = '5px';
 
@@ -1736,30 +1817,59 @@
             document.getElementById('search-results-client').appendChild(addClientBtn);
         }
 
+        // location
+        document.getElementById('search-input-location').onfocus = ev => {
+            document.getElementById('search-results-location').style.display = "block";
+        }
+
+        // service
+        document.getElementById('search-input-service').onfocus = ev => {
+            document.getElementById('search-results-service').style.display = "block";
+        }
+
+        // client
         document.getElementById('search-input-client').onfocus = ev => {
             document.getElementById('search-results-client').style.display = "block";
-
-            visibilityHRLine('0');
         }
 
         document.addEventListener("click", function (event) {
-            var myDiv = document.getElementById('search-results-client');
-            var clickedElement = event.target;
-            if (!myDiv.contains(clickedElement)) {
+            const clickedElement = event.target;
+            //
+            const clientSearchSesult = document.getElementById('search-results-client');
+            const serviceSearchSesult = document.getElementById('search-results-service');
+            const locationSearchSesult = document.getElementById('search-results-location');
+
+            if (!clientSearchSesult.contains(clickedElement)) {
 
                 if (document.activeElement === document.getElementById('search-input-client')) {
                     // alert("The input is in focus.");
                 } else {
                     document.getElementById('search-results-client').style.display = "none";
-
-                    visibilityHRLine('0.6');
                 }
             }
+
+            if (!serviceSearchSesult.contains(clickedElement)) {
+                if (document.activeElement === document.getElementById('search-input-service')) {
+                    // alert("The input is in focus.");
+                } else {
+                    document.getElementById('search-results-service').style.display = "none";
+                }
+            }
+
+            if (!locationSearchSesult.contains(clickedElement)) {
+                if (document.activeElement === document.getElementById('search-input-location')) {
+                    // alert("The input is in focus.");
+                } else {
+                    document.getElementById('search-results-location').style.display = "none";
+                }
+            }
+
         });
 
         const visibilityHRLine = (type) => {
             var hrElements = document.querySelectorAll('hr');
-            for (var i = 0; i < 3 && i < hrElements.length; i++) {
+            // for (var i = 0; i < 3 && i < hrElements.length; i++) {
+            for (var i = 0; i < hrElements.length; i++) {
                 hrElements[i].style.opacity = type;
             }
         }
@@ -1912,6 +2022,10 @@
             } else if (receivedMessage.type === "show tooltip") {
                 isTooltip = true;
                 showTooltip_one();
+            } else if (receivedMessage.type === "populate new service details") {
+                setCurrentService(receivedMessage.data);
+            } else if (receivedMessage.type === "populate new location details") {
+                setCurrentLocation(receivedMessage.data);
             }
         });
 
